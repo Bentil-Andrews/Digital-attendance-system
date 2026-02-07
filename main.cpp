@@ -1,83 +1,94 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+
 using namespace std;
 
-// ================= STUDENT CLASS =================
 class Student {
 public:
-    string indexNumber;
-    string name;
+    string indexNo;
+    string fullName;
 
-    Student(string idx, string n) {
-        indexNumber = idx;
-        name = n;
+    Student(string i, string n) {
+        indexNo = i;
+        fullName = n;
     }
 };
 
-// ================= GLOBAL STORAGE =================
-vector<Student> students;
+vector<Student> studentList;
 
-// ================= STUDENT MANAGEMENT =================
 void addStudent() {
-    string idx, name;
-
-    cout << "Enter Index Number: ";
-    cin >> idx;
+    string index, name;
+    cin >> index;
     cin.ignore();
-    cout << "Enter Student Name: ";
     getline(cin, name);
-
-    students.push_back(Student(idx, name));
-    cout << "Student added successfully!\n";
+    studentList.push_back(Student(index, name));
 }
 
 void viewStudents() {
-    cout << "\n--- Registered Students ---\n";
-    for (int i = 0; i < students.size(); i++) {
-        cout << students[i].indexNumber
-             << " - "
-             << students[i].name << endl;
+    for (int i = 0; i < studentList.size(); i++) {
+        cout << studentList[i].indexNo << " "
+             << studentList[i].fullName << endl;
     }
 }
 
-// ================= WEEK 2: LECTURE SESSION =================
 void createSession() {
-    string course, date;
-    cout << "Enter Course Code: ";
-    cin >> course;
-    cout << "Enter Date (YYYY-MM-DD): ";
-    cin >> date;
+    string week;
+    cin >> week;
+    ofstream file((week + "_attendance.txt").c_str());
+    for (int i = 0; i < studentList.size(); i++) {
+        file << studentList[i].indexNo << ","
+             << studentList[i].fullName << ",Absent\n";
+    }
+    file.close();
+}
 
-    string filename = "session_" + course + "_" + date + ".txt";
-    ofstream file(filename.c_str());
+// WEEK 3
+void markAttendance() {
+    string week;
+    cin >> week;
 
-    for (int i = 0; i < students.size(); i++) {
-        file << students[i].indexNumber << " "
-             << students[i].name << " Absent\n";
+    ifstream file((week + "_attendance.txt").c_str());
+    if (!file) {
+        cout << "Session not found.\n";
+        return;
+    }
+
+    vector<string> records;
+    string line;
+    while (getline(file, line)) {
+        records.push_back(line);
     }
     file.close();
 
-    cout << "Lecture session created successfully!\n";
+    ofstream out((week + "_attendance.txt").c_str());
+    for (int i = 0; i < records.size(); i++) {
+        cout << records[i] << endl;
+        cout << "Present? (1=yes 0=no): ";
+        int p;
+        cin >> p;
+
+        if (p == 1) {
+            int pos = records[i].find("Absent");
+            records[i].replace(pos, 6, "Present");
+        }
+        out << records[i] << endl;
+    }
+    out.close();
 }
 
-// ================= MAIN PROGRAM =================
 int main() {
-    int choice;
+    int option;
     do {
-        cout << "\n=== WEEK 2 MENU ===\n";
-        cout << "1. Register Student\n";
-        cout << "2. View Students\n";
-        cout << "3. Create Lecture Session\n";
-        cout << "0. Exit\n";
-        cout << "Choose: ";
-        cin >> choice;
+        cout << "1.Add\n2.View\n3.Session\n4.Mark\n0.Exit\n";
+        cin >> option;
 
-        if (choice == 1) addStudent();
-        else if (choice == 2) viewStudents();
-        else if (choice == 3) createSession();
+        if (option == 1) addStudent();
+        else if (option == 2) viewStudents();
+        else if (option == 3) createSession();
+        else if (option == 4) markAttendance();
 
-    } while (choice != 0);
+    } while (option != 0);
 
     return 0;
 }
