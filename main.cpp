@@ -19,52 +19,74 @@ vector<Student> studentList;
 
 void addStudent() {
     string index, name;
-    cout << "Enter index number: ";
     cin >> index;
     cin.ignore();
-    cout << "Enter full name: ";
     getline(cin, name);
     studentList.push_back(Student(index, name));
 }
 
 void viewStudents() {
     for (int i = 0; i < studentList.size(); i++) {
-        cout << studentList[i].indexNo << " - "
+        cout << studentList[i].indexNo << " "
              << studentList[i].fullName << endl;
     }
 }
 
-// WEEK 2
 void createSession() {
     string week;
-    cout << "Enter week name (e.g. week2): ";
     cin >> week;
-
     ofstream file((week + "_attendance.txt").c_str());
-
     for (int i = 0; i < studentList.size(); i++) {
         file << studentList[i].indexNo << ","
              << studentList[i].fullName << ",Absent\n";
     }
-
     file.close();
-    cout << "Session created.\n";
+}
+
+// WEEK 3
+void markAttendance() {
+    string week;
+    cin >> week;
+
+    ifstream file((week + "_attendance.txt").c_str());
+    if (!file) {
+        cout << "Session not found.\n";
+        return;
+    }
+
+    vector<string> records;
+    string line;
+    while (getline(file, line)) {
+        records.push_back(line);
+    }
+    file.close();
+
+    ofstream out((week + "_attendance.txt").c_str());
+    for (int i = 0; i < records.size(); i++) {
+        cout << records[i] << endl;
+        cout << "Present? (1=yes 0=no): ";
+        int p;
+        cin >> p;
+
+        if (p == 1) {
+            int pos = records[i].find("Absent");
+            records[i].replace(pos, 6, "Present");
+        }
+        out << records[i] << endl;
+    }
+    out.close();
 }
 
 int main() {
     int option;
-
     do {
-        cout << "\n1. Add student\n";
-        cout << "2. View students\n";
-        cout << "3. Create lecture session\n";
-        cout << "0. Exit\n";
-        cout << "Choose: ";
+        cout << "1.Add\n2.View\n3.Session\n4.Mark\n0.Exit\n";
         cin >> option;
 
         if (option == 1) addStudent();
         else if (option == 2) viewStudents();
         else if (option == 3) createSession();
+        else if (option == 4) markAttendance();
 
     } while (option != 0);
 
