@@ -1,19 +1,17 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <cstdio>   // for remove and rename
 
 using namespace std;
 
-/* ============================
-   STUDENT MANAGEMENT
-   ============================ */
+/* =========================
+   WEEK 1 – STUDENT
+   ========================= */
 
 void registerStudent() {
     ofstream file("students.txt", ios::app);
 
-    string name;
-    string index;
+    string name, index;
 
     cin.ignore();
     cout << "Enter student name: ";
@@ -30,53 +28,23 @@ void registerStudent() {
 
 void viewStudents() {
     ifstream file("students.txt");
+    string name, index;
 
-    string name;
-    string index;
-
-    cout << "\n--- Registered Students ---" << endl;
+    cout << "\nRegistered Students:\n";
 
     while (getline(file, name, ',') && getline(file, index)) {
-        cout << "Name: " << name << " | Index: " << index << endl;
+        cout << name << " - " << index << endl;
     }
 
     file.close();
 }
 
-void searchStudent() {
-    ifstream file("students.txt");
-
-    string name;
-    string index;
-    string searchIndex;
-    bool found = false;
-
-    cout << "Enter index number to search: ";
-    cin >> searchIndex;
-
-    while (getline(file, name, ',') && getline(file, index)) {
-        if (index == searchIndex) {
-            cout << "Student Found: " << name << endl;
-            found = true;
-            break;
-        }
-    }
-
-    if (!found)
-        cout << "Student not found." << endl;
-
-    file.close();
-}
-
-/* ============================
-   SESSION CREATION
-   ============================ */
+/* =========================
+   WEEK 2 – SESSION
+   ========================= */
 
 void createSession() {
-    string courseCode;
-    string date;
-    string time;
-    int duration;
+    string courseCode, date;
 
     cout << "Enter course code: ";
     cin >> courseCode;
@@ -84,34 +52,23 @@ void createSession() {
     cout << "Enter date (YYYY_MM_DD): ";
     cin >> date;
 
-    cout << "Enter start time: ";
-    cin >> time;
-
-    cout << "Enter duration (minutes): ";
-    cin >> duration;
-
     string filename = "session_" + courseCode + "_" + date + ".txt";
 
     ofstream file(filename.c_str());
-
-    file << "Course Code: " << courseCode << endl;
-    file << "Date: " << date << endl;
-    file << "Start Time: " << time << endl;
-    file << "Duration: " << duration << endl;
-    file << "--------------------------" << endl;
-
+    file << "Attendance List\n";
     file.close();
 
     cout << "Session created successfully!" << endl;
 }
 
-/* ============================
-   ATTENDANCE MANAGEMENT
-   ============================ */
+/* =========================
+   WEEK 3 – MARK ATTENDANCE
+   ========================= */
 
 void markAttendance() {
-    string courseCode;
-    string date;
+    string courseCode, date;
+    string index;
+    char status;
 
     cout << "Enter course code: ";
     cin >> courseCode;
@@ -122,47 +79,64 @@ void markAttendance() {
     string filename = "session_" + courseCode + "_" + date + ".txt";
 
     ofstream file(filename.c_str(), ios::app);
-    ifstream studentFile("students.txt");
 
-    if (!studentFile) {
-        cout << "No students registered." << endl;
+    if (!file) {
+        cout << "Session not found. Create session first.\n";
         return;
     }
 
-    string name;
-    string index;
-    string status;
+    cout << "Enter student index: ";
+    cin >> index;
 
-    while (getline(studentFile, name, ',') && getline(studentFile, index)) {
+    cout << "Present or Absent? (P/A): ";
+    cin >> status;
 
-        cout << "Mark attendance for " << name
-             << " (Present/Absent/Late): ";
-        cin >> status;
+    file << index << " - " << status << endl;
+    file.close();
 
-        while (status != "Present" &&
-               status != "Absent" &&
-               status != "Late") {
-            cout << "Invalid input. Enter Present/Absent/Late: ";
-            cin >> status;
-        }
+    cout << "Attendance marked successfully!" << endl;
+}
 
-        file << name << "," << index << "," << status << endl;
+/* =========================
+   WEEK 4 – VIEW ATTENDANCE
+   ========================= */
+
+void viewAttendance() {
+    string courseCode, date;
+
+    cout << "Enter course code: ";
+    cin >> courseCode;
+
+    cout << "Enter date (YYYY_MM_DD): ";
+    cin >> date;
+
+    string filename = "session_" + courseCode + "_" + date + ".txt";
+
+    ifstream file(filename.c_str());
+
+    if (!file) {
+        cout << "Session file not found.\n";
+        return;
+    }
+
+    string line;
+    cout << "\nAttendance Report:\n";
+
+    while (getline(file, line)) {
+        cout << line << endl;
     }
 
     file.close();
-    studentFile.close();
-
-    cout << "Attendance recorded successfully." << endl;
 }
 
-/* ============================
-   UPDATE ATTENDANCE (WEEK 4)
-   ============================ */
+/* =========================
+   WEEK 4 – UPDATE ATTENDANCE
+   ========================= */
 
 void updateAttendance() {
-    string courseCode;
-    string date;
-    string searchIndex;
+    string courseCode, date;
+    string index;
+    char newStatus;
 
     cout << "Enter course code: ";
     cin >> courseCode;
@@ -176,40 +150,24 @@ void updateAttendance() {
     ofstream temp("temp.txt");
 
     if (!file) {
-        cout << "Session file not found." << endl;
+        cout << "Session file not found.\n";
         return;
     }
 
-    cout << "Enter index number to update: ";
-    cin >> searchIndex;
+    cout << "Enter student index to update: ";
+    cin >> index;
+
+    cout << "Enter new status (P/A): ";
+    cin >> newStatus;
 
     string line;
-    bool updated = false;
+    bool found = false;
 
     while (getline(file, line)) {
-
-        if (line.find(searchIndex) != string::npos &&
-            line.find(",") != string::npos) {
-
-            string name;
-            string index;
-            string status;
-
-            int firstComma = line.find(",");
-            int secondComma = line.find(",", firstComma + 1);
-
-            name = line.substr(0, firstComma);
-            index = line.substr(firstComma + 1,
-                    secondComma - firstComma - 1);
-
-            string newStatus;
-            cout << "Enter new status (Present/Absent/Late): ";
-            cin >> newStatus;
-
-            temp << name << "," << index << "," << newStatus << endl;
-            updated = true;
-        }
-        else {
+        if (line.find(index) != string::npos) {
+            temp << index << " - " << newStatus << endl;
+            found = true;
+        } else {
             temp << line << endl;
         }
     }
@@ -220,123 +178,45 @@ void updateAttendance() {
     remove(filename.c_str());
     rename("temp.txt", filename.c_str());
 
-    if (updated)
-        cout << "Attendance updated successfully." << endl;
+    if (found)
+        cout << "Attendance updated successfully!\n";
     else
-        cout << "Student not found in session." << endl;
+        cout << "Student record not found.\n";
 }
 
-/* ============================
-   REPORTS
-   ============================ */
-
-void displayAttendance() {
-    string courseCode;
-    string date;
-
-    cout << "Enter course code: ";
-    cin >> courseCode;
-
-    cout << "Enter date (YYYY_MM_DD): ";
-    cin >> date;
-
-    string filename = "session_" + courseCode + "_" + date + ".txt";
-
-    ifstream file(filename.c_str());
-
-    if (!file) {
-        cout << "Session file not found." << endl;
-        return;
-    }
-
-    string line;
-
-    cout << "\n--- Attendance List ---" << endl;
-
-    while (getline(file, line)) {
-        cout << line << endl;
-    }
-
-    file.close();
-}
-
-void attendanceSummary() {
-    string courseCode;
-    string date;
-
-    cout << "Enter course code: ";
-    cin >> courseCode;
-
-    cout << "Enter date (YYYY_MM_DD): ";
-    cin >> date;
-
-    string filename = "session_" + courseCode + "_" + date + ".txt";
-
-    ifstream file(filename.c_str());
-
-    if (!file) {
-        cout << "Session file not found." << endl;
-        return;
-    }
-
-    string line;
-    int present = 0;
-    int absent = 0;
-    int late = 0;
-
-    while (getline(file, line)) {
-        if (line.find("Present") != string::npos)
-            present++;
-        else if (line.find("Absent") != string::npos)
-            absent++;
-        else if (line.find("Late") != string::npos)
-            late++;
-    }
-
-    cout << "\n--- Attendance Summary ---" << endl;
-    cout << "Present: " << present << endl;
-    cout << "Absent: " << absent << endl;
-    cout << "Late: " << late << endl;
-
-    file.close();
-}
-
-/* ============================
+/* =========================
    MAIN MENU
-   ============================ */
+   ========================= */
 
 int main() {
 
     int choice;
 
     do {
-        cout << "\n===== DIGITAL ATTENDANCE SYSTEM =====" << endl;
-        cout << "1. Register Student" << endl;
-        cout << "2. View Students" << endl;
-        cout << "3. Search Student" << endl;
-        cout << "4. Create Lecture Session" << endl;
-        cout << "5. Mark Attendance" << endl;
-        cout << "6. Update Attendance" << endl;
-        cout << "7. Display Attendance" << endl;
-        cout << "8. Attendance Summary" << endl;
-        cout << "9. Exit" << endl;
+        cout << "\n===== WEEK 4 SYSTEM =====\n";
+        cout << "1. Register Student\n";
+        cout << "2. View Students\n";
+        cout << "3. Create Session\n";
+        cout << "4. Mark Attendance\n";
+        cout << "5. View Attendance\n";
+        cout << "6. Update Attendance\n";
+        cout << "7. Exit\n";
         cout << "Enter choice: ";
+
         cin >> choice;
 
         switch(choice) {
             case 1: registerStudent(); break;
             case 2: viewStudents(); break;
-            case 3: searchStudent(); break;
-            case 4: createSession(); break;
-            case 5: markAttendance(); break;
+            case 3: createSession(); break;
+            case 4: markAttendance(); break;
+            case 5: viewAttendance(); break;
             case 6: updateAttendance(); break;
-            case 7: displayAttendance(); break;
-            case 8: attendanceSummary(); break;
-            case 9: cout << "Exiting program..." << endl; break;
-            default: cout << "Invalid choice." << endl;
+            case 7: cout << "Exiting...\n"; break;
+            default: cout << "Invalid choice.\n";
         }
 
-    } while(choice != 9);
+    } while(choice != 7);
 
     return 0;
 }
